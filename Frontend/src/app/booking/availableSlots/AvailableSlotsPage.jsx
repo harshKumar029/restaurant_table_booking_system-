@@ -56,7 +56,7 @@ const AvailableSlotsPage = () => {
 
           setSlots(availableSlotsList);
           setLoading(false);
-          console.log("Available Slots:", availableSlotsList);
+        //   console.log("Available Slots:", availableSlotsList);
         })
         .catch((err) => {
           console.error("Error fetching bookings:", err);
