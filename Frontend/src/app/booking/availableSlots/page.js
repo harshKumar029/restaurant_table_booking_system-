@@ -1,23 +1,16 @@
-"use client"
+"use client";
 import { Suspense } from "react";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Canteen from "../../../../public/image/Canteen.jpg";
 import axios from "axios";
 
-// Component with Suspense to handle the client-side data
-const AvailableSlotsPage = () => {
+// Component to handle slot selection logic
+const SlotSelector = ({ date, timeSlot, numberOfGuests, name, contact }) => {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [nearestSlot, setNearestSlot] = useState(null);
-  const searchParams = useSearchParams();
   const router = useRouter();
-
-  const date = searchParams.get("date");
-  const timeSlot = searchParams.get("timeSlot");
-  const numberOfGuests = searchParams.get("numberOfGuests");
-  const name = searchParams.get("name");
-  const contact = searchParams.get("contact");
 
   useEffect(() => {
     axios
@@ -25,7 +18,6 @@ const AvailableSlotsPage = () => {
       .then((response) => {
         const bookings = response.data.bookings || [];
 
-        // Generate all possible time slots from 6:00 AM to 10:00 PM
         const allSlots = [];
         for (let hour = 6; hour < 22; hour++) {
           for (let minute = 0; minute < 60; minute += 30) {
@@ -34,7 +26,6 @@ const AvailableSlotsPage = () => {
           }
         }
 
-        // Reduce the bookings to find how many guests are booked for each slot
         const availableSlots = bookings.reduce((acc, booking) => {
           const { timeSlot, numberOfGuests } = booking;
           if (!acc[timeSlot]) {
@@ -44,7 +35,6 @@ const AvailableSlotsPage = () => {
           return acc;
         }, {});
 
-        // Create a list of all slots with remaining availability
         const availableSlotsList = allSlots.map((slot) => {
           const bookedGuests = availableSlots[slot] || 0;
           return {
@@ -74,7 +64,7 @@ const AvailableSlotsPage = () => {
     }
 
     if (availableSeats < Number(numberOfGuests)) {
-      alert(`Please reduce guests or choose another time. `);
+      alert(`Please reduce guests or choose another time.`);
       return;
     }
 
@@ -132,7 +122,6 @@ const AvailableSlotsPage = () => {
           backgroundImage: `url(${Canteen.src})`,
         }}
       >
-        {/* Black Overlay */}
         <div className="absolute inset-0 bg-black/50 rounded-lg "></div>
         <div className="relative z-10 ">
           <h1 className="text-2xl md:text-3xl font-bold text-center mb-6 text-white">
@@ -224,11 +213,25 @@ const AvailableSlotsPage = () => {
   );
 };
 
-// Wrap in Suspense boundary
-export default function AvailableSlotsPageWithSuspense() {
+const AvailableSlotsPage = () => {
+  const searchParams = useSearchParams();
+  const date = searchParams.get("date");
+  const timeSlot = searchParams.get("timeSlot");
+  const numberOfGuests = searchParams.get("numberOfGuests");
+  const name = searchParams.get("name");
+  const contact = searchParams.get("contact");
+
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <AvailableSlotsPage />
+    <Suspense fallback={<div>Loading available slots...</div>}>
+      <SlotSelector
+        date={date}
+        timeSlot={timeSlot}
+        numberOfGuests={numberOfGuests}
+        name={name}
+        contact={contact}
+      />
     </Suspense>
   );
-}
+};
+
+export default AvailableSlotsPage;
