@@ -8,10 +8,10 @@ const app = express();
 
 // Enable CORS for frontend
 app.use(cors({
-  origin: "http://localhost:3000",  // Allow requests from this origin
-  methods: ["GET", "POST", "DELETE", "PUT"],  // Allow specific methods
-  allowedHeaders: ["Content-Type"],  // Allow specific headers
-}));
+    origin: ["http://localhost:3000", "https://restaurant-table-booking-system-zeta.vercel.app/"],  // Allow both origins
+    methods: ["GET", "POST", "DELETE", "PUT"],  // Allow specific methods
+    allowedHeaders: ["Content-Type"],  // Allow specific headers
+  }));
 
 // Middleware
 app.use(express.json());
