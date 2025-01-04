@@ -11,7 +11,7 @@ const BookingConfirmationPage = () => {
   const numberOfGuests = searchParams.get("numberOfGuests");
   const name = searchParams.get("name");
   const contact = searchParams.get("contact");
-  console.log(date, timeSlot, name);
+  // console.log(date, timeSlot, name);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 p-6">

@@ -103,7 +103,7 @@ const BookingPage = () => {
                   {timeSlots.map((time) => (
                     <option key={time} value={time}>
                       {time}
-                      {console.log(typeof time)}
+                      {/* {console.log(typeof time)} */}
                     </option>
                   ))}
                 </select>
