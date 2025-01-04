@@ -7,9 +7,9 @@ export default {
   ],
   theme: {
     extend: {
-      colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+      fontFamily: {
+        cormorant: ['Cormorant Garamond', 'serif'],
+        jost: ['Jost', 'sans-serif'],
       },
     },
   },
