@@ -1,58 +1,68 @@
-"use client";
-import { Suspense } from "react";
+import { Suspense } from 'react';
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Canteen from "../../../../public/image/Canteen.jpg";
 import axios from "axios";
 
-// Component to handle slot selection logic
-const SlotSelector = ({ date, timeSlot, numberOfGuests, name, contact }) => {
+const AvailableSlotsPage = () => {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [nearestSlot, setNearestSlot] = useState(null);
+  const searchParams = useSearchParams(); // This hook is used to fetch query params.
   const router = useRouter();
 
+  const date = searchParams.get("date");
+  const timeSlot = searchParams.get("timeSlot");
+  const numberOfGuests = searchParams.get("numberOfGuests");
+  const name = searchParams.get("name");
+  const contact = searchParams.get("contact");
+
   useEffect(() => {
-    axios
-      .get("https://restaurant-table-booking-system-188x.onrender.com/api/bookings")
-      .then((response) => {
-        const bookings = response.data.bookings || [];
+    if (date && timeSlot && numberOfGuests && name && contact) {
+      axios
+        .get("https://restaurant-table-booking-system-188x.onrender.com/api/bookings")
+        .then((response) => {
+          const bookings = response.data.bookings || [];
 
-        const allSlots = [];
-        for (let hour = 6; hour < 22; hour++) {
-          for (let minute = 0; minute < 60; minute += 30) {
-            const time = `${hour}:${minute === 0 ? "00" : "30"}`;
-            allSlots.push(time);
+          // Generate all possible time slots from 6:00 AM to 10:00 PM
+          const allSlots = [];
+          for (let hour = 6; hour < 22; hour++) {
+            for (let minute = 0; minute < 60; minute += 30) {
+              const time = `${hour}:${minute === 0 ? "00" : "30"}`;
+              allSlots.push(time);
+            }
           }
-        }
 
-        const availableSlots = bookings.reduce((acc, booking) => {
-          const { timeSlot, numberOfGuests } = booking;
-          if (!acc[timeSlot]) {
-            acc[timeSlot] = 0;
-          }
-          acc[timeSlot] += numberOfGuests;
-          return acc;
-        }, {});
+          // Reduce the bookings to find how many guests are booked for each slot
+          const availableSlots = bookings.reduce((acc, booking) => {
+            const { timeSlot, numberOfGuests } = booking;
+            if (!acc[timeSlot]) {
+              acc[timeSlot] = 0;
+            }
+            acc[timeSlot] += numberOfGuests;
+            return acc;
+          }, {});
 
-        const availableSlotsList = allSlots.map((slot) => {
-          const bookedGuests = availableSlots[slot] || 0;
-          return {
-            timeSlot: slot,
-            bookedGuests,
-            remainingSlots: 10 - bookedGuests,
-          };
+          // Create a list of all slots with remaining availability
+          const availableSlotsList = allSlots.map((slot) => {
+            const bookedGuests = availableSlots[slot] || 0;
+            return {
+              timeSlot: slot,
+              bookedGuests,
+              remainingSlots: 10 - bookedGuests,
+            };
+          });
+
+          setSlots(availableSlotsList);
+          setLoading(false);
+          console.log("Available Slots:", availableSlotsList);
+        })
+        .catch((err) => {
+          console.error("Error fetching bookings:", err);
+          setLoading(false);
         });
-
-        setSlots(availableSlotsList);
-        setLoading(false);
-        console.log("Available Slots:", availableSlotsList);
-      })
-      .catch((err) => {
-        console.error("Error fetching bookings:", err);
-        setLoading(false);
-      });
-  }, []);
+    }
+  }, [date, timeSlot, numberOfGuests, name, contact]);
 
   const handleSlotSelection = (slot) => {
     const existingSlot = slots.find((s) => s.timeSlot === slot.timeSlot);
@@ -115,15 +125,16 @@ const SlotSelector = ({ date, timeSlot, numberOfGuests, name, contact }) => {
       : null;
 
   return (
-    <div className="available-slots-page min-h-screen flex items-center justify-center  px-4 md:px-10">
+    <div className="available-slots-page min-h-screen flex items-center justify-center px-4 md:px-10">
       <div
         className="relative max-w-3xl w-full bg-cover bg-center rounded-lg shadow-xl p-6 md:p-10"
         style={{
           backgroundImage: `url(${Canteen.src})`,
         }}
       >
+        {/* Black Overlay */}
         <div className="absolute inset-0 bg-black/50 rounded-lg "></div>
-        <div className="relative z-10 ">
+        <div className="relative z-10">
           <h1 className="text-2xl md:text-3xl font-bold text-center mb-6 text-white">
             Available Slots
           </h1>
@@ -213,25 +224,12 @@ const SlotSelector = ({ date, timeSlot, numberOfGuests, name, contact }) => {
   );
 };
 
-const AvailableSlotsPage = () => {
-  const searchParams = useSearchParams();
-  const date = searchParams.get("date");
-  const timeSlot = searchParams.get("timeSlot");
-  const numberOfGuests = searchParams.get("numberOfGuests");
-  const name = searchParams.get("name");
-  const contact = searchParams.get("contact");
-
+const AvailableSlotsPageWithSuspense = () => {
   return (
-    <Suspense fallback={<div>Loading available slots...</div>}>
-      <SlotSelector
-        date={date}
-        timeSlot={timeSlot}
-        numberOfGuests={numberOfGuests}
-        name={name}
-        contact={contact}
-      />
+    <Suspense fallback={<div>Loading...</div>}>
+      <AvailableSlotsPage />
     </Suspense>
   );
 };
 
-export default AvailableSlotsPage;
+export default AvailableSlotsPageWithSuspense;
