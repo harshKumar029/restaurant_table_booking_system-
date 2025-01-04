@@ -1,9 +1,11 @@
 "use client"
+import { Suspense } from "react";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Canteen from "../../../../public/image/Canteen.jpg";
 import axios from "axios";
 
+// Component with Suspense to handle the client-side data
 const AvailableSlotsPage = () => {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +21,7 @@ const AvailableSlotsPage = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/bookings")
+      .get("https://restaurant-table-booking-system-188x.onrender.com/api/bookings")
       .then((response) => {
         const bookings = response.data.bookings || [];
 
@@ -85,7 +87,7 @@ const AvailableSlotsPage = () => {
     };
 
     axios
-      .post("http://localhost:5000/api/bookings", bookingDetails)
+      .post("https://restaurant-table-booking-system-188x.onrender.com/api/bookings", bookingDetails)
       .then((response) => {
         const queryParams = new URLSearchParams(bookingDetails).toString();
         router.push(`/booking/bookingConfirmation?${queryParams}`);
@@ -222,4 +224,11 @@ const AvailableSlotsPage = () => {
   );
 };
 
-export default AvailableSlotsPage;
+// Wrap in Suspense boundary
+export default function AvailableSlotsPageWithSuspense() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AvailableSlotsPage />
+    </Suspense>
+  );
+}
